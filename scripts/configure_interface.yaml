@@ -1,0 +1,108 @@
+---
+- name: Configure Network with VLAN and Bridge
+  hosts: node-1
+  become: true
+  vars:
+    interface: "eth0"
+    vlan_id: 50
+    ip_address: "192.168.50.3"  # Default static IP
+    netmask: 24
+    firewalld_zone: "trusted"
+    bridge_name: "br50"
+    bridge_ip: "192.168.50.1"  # Default static IP for bridge
+    bridge_netmask: 24
+    dns1: "192.168.1.1"
+    domain: "example.com"
+    use_dhcp: false # New variable to control DHCP vs. static
+
+  tasks:
+    - name: Ensure necessary packages are installed
+      package:
+        name:
+          - iproute2
+          - firewalld
+          - NetworkManager # Ensure NetworkManager is installed for nmcli
+        state: present
+
+    - name: Create VLAN interface
+      nmcli:
+        conn_name: "{{ interface }}.{{ vlan_id }}"
+        ifname: "{{ interface }}.{{ vlan_id }}"
+        type: vlan
+        dev: "{{ interface }}"
+        id: "{{ vlan_id }}"
+        state: present
+      register: vlan_result
+
+    - name: Configure VLAN interface IP address
+      nmcli:
+        conn_name: "{{ interface }}.{{ vlan_id }}"
+        ipv4.addresses: "{{ ip_address }}/{{ netmask }}"
+        ipv4.method: "{{ 'manual' if not use_dhcp else 'auto' }}"
+        ipv4.dns: "{{ dns1 }}"
+        ipv4.dns_search: "{{ domain }}"
+        state: present
+      when: vlan_result.changed
+
+    - name: Bring up VLAN interface
+      nmcli:
+        conn_name: "{{ interface }}.{{ vlan_id }}"
+        state: up
+
+    - name: Create bridge interface
+      nmcli:
+        conn_name: "{{ bridge_name }}"
+        ifname: "{{ bridge_name }}"
+        type: bridge
+        stp: no
+        state: present
+      register: bridge_result
+
+    - name: Configure bridge interface IP address
+      nmcli:
+        conn_name: "{{ bridge_name }}"
+        ipv4.addresses: "{{ bridge_ip }}/{{ bridge_netmask }}"
+        ipv4.method: "{{ 'manual' if not use_dhcp else 'auto' }}" #Use DHCP for Bridge
+        ipv4.dns: "{{ dns1 }}"
+        ipv4.dns_search: "{{ domain }}"
+        state: present
+      when: bridge_result.changed
+
+    - name: Bring up bridge interface
+      nmcli:
+        conn_name: "{{ bridge_name }}"
+        state: up
+
+    - name: Add VLAN interface to bridge
+      nmcli:
+        conn_name: "{{ interface }}.{{ vlan_id }}"
+        master: "{{ bridge_name }}"
+        state: present
+
+    - name: Bring VLAN interface up again (as part of bridge)
+      nmcli:
+        conn_name: "{{ interface }}.{{ vlan_id }}"
+        state: up
+
+    - name: Add bridge interface to firewalld zone
+      firewalld:
+        zone: "{{ firewalld_zone }}"
+        interface: "{{ bridge_name }}"
+        permanent: true
+        state: present
+
+    - name: Reload firewalld
+      service:
+        name: firewalld
+        state: reloaded
+
+    - name: Verify configuration (optional - can be removed)
+      debug:
+        msg: |
+          VLAN Interface: {{ interface }}.{{ vlan_id }}
+          VLAN IP Address: {{ ip_address }}/{{ netmask }} (Static, DHCP: {{ use_dhcp }})
+          Bridge Interface: {{ bridge_name }}
+          Bridge IP Address: {{ bridge_ip }}/{{ bridge_netmask }} (Static, DHCP: {{ use_dhcp}})
+          Firewalld Zone: {{ firewalld_zone }}
+
+
