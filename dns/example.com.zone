@@ -1,0 +1,46 @@
+$TTL 8h
+@ IN SOA ns1.example.com. hostmaster.example.com. (
+                          2025040201 ; serial number
+                          1d         ; refresh period
+                          3h         ; retry period
+                          3d         ; expire time
+                          3h )       ; minimum TTL
+
+                  IN NS   ns1.example.com.
+                  IN MX   10 mail.example.com.
+
+www               IN A    192.168.50.51
+ns1               IN A    192.168.50.52
+mail              IN A    192.168.50.53
+$ORIGIN apps.ocp.example.com.
+;*             A       192.168.50.14
+*             A       192.168.50.21
+$ORIGIN ocp.example.com.
+;api           A       192.168.50.41
+api           A       192.168.50.21
+provisioner   A       192.168.50.38
+master01      A       192.168.50.21
+master02      A       192.168.50.22
+master03      A       192.168.50.23
+worker01      A       192.168.50.11
+worker02      A       192.168.50.12
+worker03      A       192.168.50.13
+
+kdssnow           A       192.168.50.17
+api.kdssnow       A       192.168.50.17
+$ORIGIN apps.kdssnow.ocp.example.com.
+*             A       192.168.50.17
+storage01     A       192.168.50.31
+storage02     A       192.168.50.32
+storage03     A       192.168.50.33
+kdssnow2           A       192.168.50.37
+api.kdssnow2       A       192.168.50.37
+$ORIGIN apps.kdssnow2.ocp.example.com.
+*             A       192.168.50.37
+$ORIGIN ocp.example.com.
+install       A       192.168.50.38
+node-1        A       192.168.50.1
+node-2        A       192.168.50.2
+node-3        A       192.168.50.3
+node-5        A       192.168.50.5
+

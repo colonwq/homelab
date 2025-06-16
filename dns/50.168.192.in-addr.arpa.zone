@@ -1,0 +1,27 @@
+$TTL 8h
+@ IN SOA ns1.example.com. hostmaster.example.com. (
+                          2025032601 ; serial number
+                          1d         ; refresh period
+                          3h         ; retry period
+                          3d         ; expire time
+                          3h )       ; minimum TTL
+
+   IN NS   ns1.ocp.example.com.
+39 IN PTR  ns1.ocp.example.com.
+30 IN PTR  www.ocp.example.com.
+11 IN PTR worker01.ocp.example.com.
+12 IN PTR worker02.ocp.example.com.
+13 IN PTR worker03.ocp.example.com.
+21 IN PTR master01.ocp.example.com.
+22 IN PTR master02.ocp.example.com.
+23 IN PTR master03.ocp.example.com.
+31 IN PTR storage01.ocp.example.com.
+32 IN PTR storage02.ocp.example.com.
+33 IN PTR storage03.ocp.example.com.
+37 IN PTR sno.ocp.example.com.
+41 IN PTR api.ocp.example.com.
+1 IN PTR node-1.ocp.example.com.
+2 IN PTR node-2.ocp.example.com.
+3 IN PTR node-3.ocp.example.com.
+5 IN PTR node-5.ocp.example.com.
+
